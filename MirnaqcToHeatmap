@@ -1,0 +1,37 @@
+library(reshape2)
+library(ggplot2)
+library(scales)
+
+test <- read.table(file='mirnaqc_count.tsv',header=T)
+
+
+colnames(test) <- c("gene","Negative","HS","NRG")
+
+test['HS-Negative'] <- test$HS-test$Negative
+test['NRG-Negative'] <- test$NRG-test$Negative
+#test['Exosome Inf HS']<-scale(test$`HS-Negative`)
+#test['Exosome Inf NRG']<-scale(test$`NRG-Negative`)
+matrix <- data.frame(test$gene,scale(test$`HS-Negative`),scale(test$`NRG-Negative`))
+colnames(matrix) <- c("gene","Exosomes HS-Inf","Exosomes NRG-Inf")
+co=melt(matrix)
+head(co)
+ggplot(co, aes( variable,gene)) + # x and y axes => Var1 and Var2
+  geom_tile(aes(fill = value)) + # background colours are mapped according to the value column
+  #geom_text(aes(fill = co$value, label = round(co$value, 2))) + # write the values
+  scale_fill_gradient2(low = muted("darkred"), 
+                       mid = "white", 
+                       high = muted("midnightblue"), 
+                       midpoint = 0) + # determine the colour
+  theme(panel.grid.major.x=element_blank(), #no gridlines
+        panel.grid.minor.x=element_blank(), 
+        panel.grid.major.y=element_blank(), 
+        panel.grid.minor.y=element_blank(),
+        panel.background=element_rect(fill="white"), # background=white
+        axis.text.x = element_text(angle=90, hjust = 1,vjust=1,size = 12,face = "bold"),
+        plot.title = element_text(size=20,face="bold"),
+        axis.text.y = element_text(size = 12,face = "bold")) + 
+  # ggtitle("Correlation Plot") + 
+  theme(legend.title=element_text(face="bold", size=14)) + 
+  scale_x_discrete(name="") +
+  scale_y_discrete(name="") +
+  labs(fill="Scale")
